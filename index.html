@@ -1,324 +1,793 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Probabilidades de Escenarios</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Reporte probabilístico interactivo</title>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #ffffff; color: #1a1a1a; font-size: 14px; line-height: 1.5; padding: 16px; }
-  h1 { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: #111; }
-  .tabs { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
-  .tab { font-size: 12px; padding: 5px 12px; border-radius: 20px; border: 1px solid #ddd; background: transparent; cursor: pointer; color: #666; transition: all 0.15s; }
-  .tab.active { background: #111; color: #fff; border-color: #111; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
-  .card { background: #f9f9f8; border: 1px solid #eee; border-radius: 10px; padding: 14px; }
-  .section-title { font-size: 11px; font-weight: 600; color: #999; text-transform: uppercase; letter-spacing: 0.06em; margin: 14px 0 8px; }
-  .row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+  :root {
+    --bg: #f4f4f2;
+    --paper: #ffffff;
+    --ink: #111111;
+    --muted: #6b7280;
+    --line: #e6e7ea;
+    --soft: #f8f8f7;
+    --a: #111827;
+    --b: #6b7280;
+    --c: #b45309;
+    --up: #166534;
+    --down: #991b1b;
+    --flat: #374151;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    padding: 28px;
+  }
+
+  .sheet {
+    max-width: 1380px;
+    margin: 0 auto;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 30px;
+  }
+
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 16px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 22px;
+  }
+
+  .eyebrow {
+    font-size: 11px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 34px;
+    line-height: 1;
+    letter-spacing: -.03em;
+  }
+
+  .sub {
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .date-box {
+    text-align: right;
+    min-width: 120px;
+  }
+
+  .date-box .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    color: var(--muted);
+  }
+
+  .date-box .value {
+    margin-top: 6px;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+  }
+
+  .tab {
+    border: 1px solid var(--line);
+    background: #fff;
+    color: #4b5563;
+    padding: 10px 16px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: .18s ease;
+  }
+
+  .tab.active {
+    background: #111;
+    border-color: #111;
+    color: #fff;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 1.08fr .92fr;
+    gap: 24px;
+  }
+
+  .block-title {
+    font-size: 12px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 10px;
+  }
+
+  .card {
+    background: var(--soft);
+    border: 1px solid var(--line);
+    padding: 18px;
+  }
+
+  .scenario-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .scenario-head {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 14px;
+  }
+
+  .scenario-kicker {
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    margin-bottom: 4px;
+  }
+
+  .scenario-title {
+    font-size: 24px;
+    line-height: 1.05;
+    margin: 0;
+    letter-spacing: -.02em;
+  }
+
+  .prob-box {
+    text-align: right;
+    min-width: 110px;
+  }
+
+  .prob-box .pct {
+    font-size: 34px;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .prob-box .tag {
+    display: inline-block;
+    margin-top: 7px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .tag.a { background: rgba(17,24,39,.08); color: var(--a); }
+  .tag.b { background: rgba(107,114,128,.12); color: #4b5563; }
+  .tag.c { background: rgba(180,83,9,.12); color: var(--c); }
+
+  .scenario-desc {
+    color: #222;
+    font-size: 14px;
+    line-height: 1.55;
+    margin-bottom: 14px;
+  }
+
+  .three-cols {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .mini-box {
+    background: var(--soft);
+    border: 1px solid var(--line);
+    padding: 12px;
+    min-height: 100%;
+  }
+
+  .mini-box h4 {
+    margin: 0 0 8px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #4b5563;
+  }
+
+  .mini-box ul {
+    margin: 0;
+    padding-left: 18px;
+    color: #222;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .controls-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .control-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    padding: 14px;
+  }
+
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
   .row:last-child { margin-bottom: 0; }
-  .label { font-size: 12px; color: #666; min-width: 110px; }
-  input[type=range] { flex: 1; min-width: 80px; accent-color: #111; }
-  .val { font-size: 12px; font-weight: 600; min-width: 28px; text-align: right; }
-  select { font-size: 12px; padding: 3px 6px; border: 1px solid #ddd; border-radius: 6px; background: #fff; color: #333; }
-  .sig-btns { display: flex; gap: 4px; flex-wrap: wrap; }
-  .sig-btn { font-size: 11px; padding: 3px 8px; border-radius: 20px; border: 1px solid #ddd; background: #fff; cursor: pointer; color: #666; transition: all 0.1s; }
-  .sig-btn.pos { background: #ecfdf5; color: #065f46; border-color: #6ee7b7; }
-  .sig-btn.neg { background: #fef2f2; color: #991b1b; border-color: #fca5a5; }
-  .sig-btn.neu { background: #f3f4f6; color: #374151; border-color: #d1d5db; }
-  .result-big { font-size: 36px; font-weight: 700; line-height: 1; margin: 8px 0 4px; }
-  .delta { font-size: 12px; margin-bottom: 10px; }
-  .bar-wrap { height: 6px; background: #eee; border-radius: 3px; overflow: hidden; margin-bottom: 12px; }
-  .bar { height: 6px; border-radius: 3px; transition: width 0.4s ease; }
-  .debug-row { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 0; border-bottom: 1px solid #f0f0f0; color: #555; }
-  .debug-row:last-child { border-bottom: none; }
-  .debug-val { font-weight: 600; color: #111; }
-  .badge { font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 500; }
-  .badge.up { background: #ecfdf5; color: #065f46; }
-  .badge.down { background: #fef2f2; color: #991b1b; }
-  .badge.flat { background: #f3f4f6; color: #374151; }
-  .scenario-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .scenario-name-res { font-size: 13px; font-weight: 600; color: #333; }
-  .all-row { margin-bottom: 8px; }
-  .all-row-header { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 3px; }
-  .total-row { display: flex; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee; font-size: 13px; }
-  canvas { display: block; margin: 0 auto; }
-  .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; justify-content: center; }
-  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #555; }
-  .legend-dot { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
+
+  .label {
+    min-width: 120px;
+    font-size: 13px;
+    color: #4b5563;
+  }
+
+  input[type="range"] {
+    flex: 1;
+    accent-color: #111;
+  }
+
+  select {
+    font-size: 12px;
+    padding: 6px 8px;
+    border: 1px solid #d1d5db;
+    background: #fff;
+  }
+
+  .val {
+    min-width: 40px;
+    text-align: right;
+    font-weight: 700;
+  }
+
+  .sig-btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    flex: 1;
+  }
+
+  .sig-btn {
+    border: 1px solid #d1d5db;
+    background: #fff;
+    color: #4b5563;
+    border-radius: 999px;
+    padding: 5px 10px;
+    font-size: 11px;
+    cursor: pointer;
+  }
+  .sig-btn.pos { background: #ecfdf5; border-color: #86efac; color: #166534; }
+  .sig-btn.neg { background: #fef2f2; border-color: #fca5a5; color: #991b1b; }
+  .sig-btn.neu { background: #f3f4f6; border-color: #d1d5db; color: #374151; }
+
+  .summary-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+
+  .summary-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    gap: 16px;
+    margin-bottom: 14px;
+  }
+
+  .summary-name { font-size: 20px; font-weight: 700; }
+  .summary-badge {
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 5px 10px;
+  }
+  .up { background: #ecfdf5; color: var(--up); }
+  .down { background: #fef2f2; color: var(--down); }
+  .flat { background: #f3f4f6; color: var(--flat); }
+
+  .big-number {
+    font-size: 44px;
+    line-height: 1;
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+
+  .delta {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+
+  .bar-wrap {
+    height: 8px;
+    background: #ececec;
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+
+  .bar {
+    height: 100%;
+    transition: width .25s ease;
+  }
+
+  .debug-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 7px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 13px;
+  }
+  .debug-row:last-child { border-bottom: 0; }
+
+  .table-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    overflow: hidden;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  th, td {
+    border: 1px solid var(--line);
+    padding: 10px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background: #f3f2ef;
+    font-weight: 700;
+  }
+
+  .scenario-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+
+  .scenario-a { background: var(--a); }
+  .scenario-b { background: var(--b); }
+  .scenario-c { background: var(--c); }
+
+  .footer-note {
+    margin-top: 18px;
+    color: var(--muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+  }
+
+  @media (max-width: 1020px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 760px) {
+    body { padding: 14px; }
+    .sheet { padding: 16px; }
+    .three-cols { grid-template-columns: 1fr; }
+    .topbar { flex-direction: column; align-items: start; }
+    .date-box { text-align: left; }
+    .scenario-head, .summary-top { flex-direction: column; }
+    .prob-box { text-align: left; }
+  }
 </style>
 </head>
 <body>
-<h1>Calculadora de probabilidades de escenarios</h1>
-
-<div class="tabs" id="scenarioTabs"></div>
-
-<div class="grid">
-  <div>
-    <div class="section-title">Probabilidad base</div>
-    <div class="card">
-      <div class="row">
-        <span class="label">Pbase (%)</span>
-        <input type="range" min="0" max="100" step="5" id="pbase" value="40">
-        <span class="val" id="pbase-out">40</span>
+  <div class="sheet">
+    <div class="topbar">
+      <div>
+        <div class="eyebrow">Reporte probabilístico interactivo</div>
+        <h1>Escenarios</h1>
+        <div class="sub">Misma lógica de fórmula, pero con presentación más cercana al reporte probabilístico y con estructura fija de Escenario A, Escenario B y Escenario C.</div>
+      </div>
+      <div class="date-box">
+        <div class="label">Formato</div>
+        <div class="value">A / B / C</div>
       </div>
     </div>
 
-    <div class="section-title">Ajuste por dato macro (ΔD)</div>
-    <div class="card">
-      <div class="row">
-        <span class="label">w inflación</span>
-        <select id="winf"><option value="0">nulo</option><option value="0.5">bajo</option><option value="1">medio</option><option value="1.5" selected>alto</option></select>
-        <div class="sig-btns" id="sinf-btns"></div>
-      </div>
-      <div class="row">
-        <span class="label">w crecimiento</span>
-        <select id="wcre"><option value="0">nulo</option><option value="0.5" selected>bajo</option><option value="1">medio</option><option value="1.5">alto</option></select>
-        <div class="sig-btns" id="scre-btns"></div>
-      </div>
-      <div class="row">
-        <span class="label">w empleo</span>
-        <select id="wemp"><option value="0" selected>nulo</option><option value="0.5">bajo</option><option value="1">medio</option><option value="1.5">alto</option></select>
-        <div class="sig-btns" id="semp-btns"></div>
-      </div>
-    </div>
+    <div class="tabs" id="scenarioTabs"></div>
 
-    <div class="section-title">Forward guidance (ΔFG)</div>
-    <div class="card">
-      <div class="row">
-        <span class="label">w fwd guidance</span>
-        <select id="wfg"><option value="0">nulo</option><option value="0.5">bajo</option><option value="1">medio</option><option value="1.5" selected>alto</option></select>
-        <div class="sig-btns" id="sfg-btns"></div>
-      </div>
-    </div>
+    <div class="layout">
+      <div>
+        <div class="block-title">Escenario activo</div>
+        <div class="scenario-card">
+          <div class="scenario-head">
+            <div>
+              <div class="scenario-kicker" id="scenarioKicker">Escenario A</div>
+              <h2 class="scenario-title" id="scenarioTitle">—</h2>
+            </div>
+            <div class="prob-box">
+              <div class="pct" id="scenarioPct">—</div>
+              <span class="tag a" id="scenarioTone">Neutral</span>
+            </div>
+          </div>
+          <div class="scenario-desc" id="scenarioDesc">—</div>
+          <div style="font-size:12px;color:#6b7280;border-top:1px solid #e6e7ea;padding-top:12px;">Mueve los pesos y señales para desplazar la probabilidad entre Escenario A, Escenario B y Escenario C.</div>
+        </div>
 
-    <div class="section-title">Geopolítica / Risk (ΔG)</div>
-    <div class="card">
-      <div class="row">
-        <span class="label">w geopolítica</span>
-        <select id="wgeo"><option value="0">nulo</option><option value="0.5">bajo</option><option value="1" selected>medio</option><option value="1.5">alto</option></select>
-        <div class="sig-btns" id="sgeo-btns"></div>
+        <div class="block-title">Ajustes del escenario activo</div>
+        <div class="controls-grid">
+          <div class="control-card">
+            <div class="row">
+              <span class="label">Pbase (%)</span>
+              <input type="range" min="0" max="100" step="5" id="pbase" value="40" />
+              <span class="val" id="pbaseOut">40</span>
+            </div>
+          </div>
+
+          <div class="control-card">
+            <div class="row">
+              <span class="label">Inflación</span>
+              <select id="winf">
+                <option value="0">nulo</option>
+                <option value="0.5">bajo</option>
+                <option value="1">medio</option>
+                <option value="1.5">alto</option>
+              </select>
+              <div class="sig-btns" id="sinfBtns"></div>
+            </div>
+            <div class="row">
+              <span class="label">Crecimiento</span>
+              <select id="wcre">
+                <option value="0">nulo</option>
+                <option value="0.5">bajo</option>
+                <option value="1">medio</option>
+                <option value="1.5">alto</option>
+              </select>
+              <div class="sig-btns" id="screBtns"></div>
+            </div>
+            <div class="row">
+              <span class="label">Empleo</span>
+              <select id="wemp">
+                <option value="0">nulo</option>
+                <option value="0.5">bajo</option>
+                <option value="1">medio</option>
+                <option value="1.5">alto</option>
+              </select>
+              <div class="sig-btns" id="sempBtns"></div>
+            </div>
+          </div>
+
+          <div class="control-card">
+            <div class="row">
+              <span class="label">Foward Guidance</span>
+              <select id="wfg">
+                <option value="0">nulo</option>
+                <option value="0.5">bajo</option>
+                <option value="1">medio</option>
+                <option value="1.5">alto</option>
+              </select>
+              <div class="sig-btns" id="sfgBtns"></div>
+            </div>
+          </div>
+
+          <div class="control-card">
+            <div class="row">
+              <span class="label">Geopolítica</span>
+              <select id="wgeo">
+                <option value="0">nulo</option>
+                <option value="0.5">bajo</option>
+                <option value="1">medio</option>
+                <option value="1.5">alto</option>
+              </select>
+              <div class="sig-btns" id="sgeoBtns"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="block-title">Probabilidad resultante</div>
+        <div class="summary-card">
+          <div class="summary-top">
+            <div class="summary-name" id="resName">—</div>
+            <span class="summary-badge flat" id="resBadge">≈ estable</span>
+          </div>
+          <div class="big-number" id="resPct">—</div>
+          <div class="delta" id="resDelta">—</div>
+          <div class="bar-wrap"><div class="bar" id="resBar"></div></div>
+          <div class="debug-row"><span>Pbase</span><strong id="dbgPbase">—</strong></div>
+          <div class="debug-row"><span>Dato macro</span><strong id="dbgDd">—</strong></div>
+          <div class="debug-row"><span>Foward Guidance</span><strong id="dbgDfg">—</strong></div>
+          <div class="debug-row"><span>Geopolítica</span><strong id="dbgDg">—</strong></div>
+          <div class="debug-row"><span>Probabilidad sin normalizar</span><strong id="dbgRaw">—</strong></div>
+        </div>
+
+        <div class="block-title">Escenarios más probables</div>
+        <div class="table-card">
+          <table>
+            <thead>
+              <tr>
+                <th>Escenario</th>
+                <th>Probabilidad base</th>
+                <th>Probabilidad final</th>
+                <th>Lectura táctica</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+            <tfoot>
+              <tr>
+                <td colspan="2"><strong>Total normalizado</strong></td>
+                <td colspan="2" id="tableTotal"><strong>100%</strong></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div class="footer-note">Puedes mover cada bloque como antes, pero ahora todo está ordenado sobre tres posibilidades fijas: Escenario A, Escenario B y Escenario C.</div>
       </div>
     </div>
   </div>
-
-  <div>
-    <div class="section-title">Resultado del escenario activo</div>
-    <div class="card">
-      <div class="scenario-header">
-        <span class="scenario-name-res" id="res-name">—</span>
-        <span class="badge flat" id="res-badge">—</span>
-      </div>
-      <div class="result-big" id="res-pct">—</div>
-      <div class="delta" id="res-delta" style="color:#999">—</div>
-      <div class="bar-wrap"><div class="bar" id="res-bar" style="width:0%"></div></div>
-      <div class="debug-row"><span>Pbase</span><span class="debug-val" id="dbg-pbase">—</span></div>
-      <div class="debug-row"><span>ΔD (datos macro)</span><span class="debug-val" id="dbg-dd">—</span></div>
-      <div class="debug-row"><span>ΔFG (forward guidance)</span><span class="debug-val" id="dbg-dfg">—</span></div>
-      <div class="debug-row"><span>ΔG (geopolítica)</span><span class="debug-val" id="dbg-dg">—</span></div>
-    </div>
-
-    <div class="section-title">Todos los escenarios (normalizados)</div>
-    <div class="card" id="all-card"></div>
-
-    <div class="section-title">Distribución visual</div>
-    <div class="card">
-      <canvas id="donut" width="160" height="160"></canvas>
-      <div class="legend" id="legend"></div>
-    </div>
-  </div>
-</div>
 
 <script>
-const SCENARIOS = [
-  { id: 0, name: 'Tipos altos más tiempo', color: '#ef4444' },
-  { id: 1, name: 'Aterrizaje suave', color: '#10b981' },
-  { id: 2, name: 'Recesión', color: '#8b5cf6' },
-  { id: 3, name: 'Reflación', color: '#f59e0b' },
-];
-
-const SIGNALS = [
-  { label: 'Muy fav.', val: 10 },
-  { label: 'Fav.', val: 5 },
-  { label: 'Neutro', val: 0 },
-  { label: 'Desfav.', val: -5 },
-  { label: 'Muy desfav.', val: -10 },
-];
-
-let active = 0;
-let states = SCENARIOS.map((s, i) => ({
-  pbase: [40, 30, 20, 10][i],
-  winf: 1.5, sinf: 10,
-  wcre: 0.5, scre: -5,
-  wemp: 0, semp: 0,
-  wfg: 1.5, sfg: 5,
-  wgeo: 1, sgeo: 5,
-}));
-
-function makeSigBtns(containerId, key) {
-  const c = document.getElementById(containerId);
-  c.innerHTML = '';
-  const s = states[active];
-  SIGNALS.forEach(sig => {
-    const b = document.createElement('button');
-    b.className = 'sig-btn';
-    b.textContent = sig.label;
-    if (s[key] === sig.val) {
-      if (sig.val > 0) b.className += ' pos';
-      else if (sig.val < 0) b.className += ' neg';
-      else b.className += ' neu';
+  const SCENARIOS = [
+    {
+      id: 0,
+      code: 'A',
+      short: 'Escenario A',
+      name: 'Escenario A · Base / continuidad',
+      tone: 'Neutral',
+      color: '#111827',
+      tagClass: 'a',
+      description: 'Escenario principal o de continuidad. Representa la lectura base del reporte y sirve como referencia para ver cómo se desplaza la probabilidad cuando cambias pesos y señales.',
+      tactical: 'Escenario de continuidad. Sirve como referencia para comparar el desplazamiento de probabilidad del resto.'
+    },
+    {
+      id: 1,
+      code: 'B',
+      short: 'Escenario B',
+      name: 'Escenario B · Desviación principal',
+      tone: 'Direccional',
+      color: '#6b7280',
+      tagClass: 'b',
+      description: 'Escenario alternativo principal. Gana peso cuando el dato macro o el guidance empiezan a mover la narrativa con más fuerza que el escenario base.',
+      tactical: 'Escenario para capturar el movimiento principal alternativo frente a la base.'
+    },
+    {
+      id: 2,
+      code: 'C',
+      short: 'Escenario C',
+      name: 'Escenario C · Shock / cola',
+      tone: 'Extremo',
+      color: '#b45309',
+      tagClass: 'c',
+      description: 'Escenario de shock o cola. Aumenta cuando la geopolítica, la energía o un cambio brusco del sentimiento del mercado alteran de verdad la distribución.',
+      tactical: 'Escenario pensado para cola de distribución: menos probable, pero relevante en impacto.'
     }
-    b.onclick = () => { states[active][key] = sig.val; render(); };
-    c.appendChild(b);
+  ];
+
+  const SIGNALS = [
+    { label: 'Muy fav.', val: 10 },
+    { label: 'Fav.', val: 5 },
+    { label: 'Neutro', val: 0 },
+    { label: 'Desfav.', val: -5 },
+    { label: 'Muy desfav.', val: -10 }
+  ];
+
+  let active = 0;
+
+  let states = [
+    { pbase: 40, winf: 1.5, sinf: 5,  wcre: 1,   scre: 0,  wemp: 0.5, semp: 0,  wfg: 1,   sfg: 5,  wgeo: 0.5, sgeo: 0 },
+    { pbase: 35, winf: 1,   sinf: 0,  wcre: 1.5, scre: 5,  wemp: 1,   semp: 5,  wfg: 1,   sfg: 0,  wgeo: 0.5, sgeo: 0 },
+    { pbase: 25, winf: 1,   sinf: 5,  wcre: 0.5, scre: -5, wemp: 0.5, semp: -5, wfg: 0.5, sfg: 5,  wgeo: 1.5, sgeo: 10 }
+  ];
+
+  function round5(x) { return Math.round(x / 5) * 5; }
+  function getSelect(id) { return parseFloat(document.getElementById(id).value); }
+
+  function buildTabs() {
+    const el = document.getElementById('scenarioTabs');
+    el.innerHTML = '';
+    SCENARIOS.forEach((s) => {
+      const btn = document.createElement('button');
+      btn.className = 'tab' + (s.id === active ? ' active' : '');
+      btn.textContent = s.short;
+      btn.onclick = () => { active = s.id; render(); };
+      el.appendChild(btn);
+    });
+  }
+
+  function makeSigBtns(containerId, key) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    SIGNALS.forEach(sig => {
+      const btn = document.createElement('button');
+      btn.className = 'sig-btn';
+      btn.textContent = sig.label;
+      if (states[active][key] === sig.val) {
+        btn.classList.add(sig.val > 0 ? 'pos' : sig.val < 0 ? 'neg' : 'neu');
+      }
+      btn.onclick = () => {
+        states[active][key] = sig.val;
+        render();
+      };
+      container.appendChild(btn);
+    });
+  }
+
+  function calcRaw(s) {
+    const dd = s.winf * s.sinf + s.wcre * s.scre + s.wemp * s.semp;
+    const dfg = s.wfg * s.sfg;
+    const dg = s.wgeo * s.sgeo;
+    const raw = s.pbase + dd + dfg + dg;
+    return { dd, dfg, dg, raw };
+  }
+
+  function computeAll() {
+    const raws = states.map(calcRaw).map(r => ({ ...r, clipped: Math.max(0, r.raw) }));
+    const sum = raws.reduce((acc, r) => acc + r.clipped, 0);
+
+    if (!sum) {
+      return raws.map((r, i) => ({ ...r, pfinal: i === 0 ? 100 : 0 }));
+    }
+
+    const exacts = raws.map(r => (r.clipped / sum) * 100);
+    const floors = exacts.map(x => Math.floor(x / 5) * 5);
+    let used = floors.reduce((a, b) => a + b, 0);
+    let remaining = 100 - used;
+
+    const order = exacts
+      .map((x, i) => ({ i, rem: x - floors[i] }))
+      .sort((a, b) => b.rem - a.rem);
+
+    const finals = floors.slice();
+    let ptr = 0;
+    while (remaining > 0 && order.length) {
+      finals[order[ptr % order.length].i] += 5;
+      remaining -= 5;
+      ptr++;
+    }
+
+    return raws.map((r, i) => ({
+      ...r,
+      exact: exacts[i],
+      pfinal: finals[i]
+    }));
+  }
+
+  function syncInputs() {
+    const s = states[active];
+    document.getElementById('pbase').value = s.pbase;
+    document.getElementById('pbaseOut').textContent = s.pbase;
+    document.getElementById('winf').value = s.winf;
+    document.getElementById('wcre').value = s.wcre;
+    document.getElementById('wemp').value = s.wemp;
+    document.getElementById('wfg').value = s.wfg;
+    document.getElementById('wgeo').value = s.wgeo;
+
+    makeSigBtns('sinfBtns', 'sinf');
+    makeSigBtns('screBtns', 'scre');
+    makeSigBtns('sempBtns', 'semp');
+    makeSigBtns('sfgBtns', 'sfg');
+    makeSigBtns('sgeoBtns', 'sgeo');
+  }
+
+  function renderScenarioText(results) {
+    const sc = SCENARIOS[active];
+    document.getElementById('scenarioKicker').textContent = sc.short;
+    document.getElementById('scenarioTitle').textContent = sc.name;
+    document.getElementById('scenarioPct').textContent = results[active].pfinal + '%';
+
+    const tone = document.getElementById('scenarioTone');
+    tone.textContent = sc.tone;
+    tone.className = 'tag ' + sc.tagClass;
+
+    document.getElementById('scenarioDesc').textContent = sc.description;
+  }
+
+  function renderSummary(results) {
+    const sc = SCENARIOS[active];
+    const s = states[active];
+    const cur = results[active];
+    const delta = cur.pfinal - s.pbase;
+
+    document.getElementById('resName').textContent = sc.short;
+    document.getElementById('resPct').textContent = cur.pfinal + '%';
+    document.getElementById('resPct').style.color = sc.color;
+    document.getElementById('resDelta').textContent = `${delta >= 0 ? '+' : ''}${delta.toFixed(1)} vs base`;
+    document.getElementById('resDelta').style.color = delta > 0 ? 'var(--up)' : delta < 0 ? 'var(--down)' : 'var(--muted)';
+    document.getElementById('resBar').style.width = Math.min(cur.pfinal, 100) + '%';
+    document.getElementById('resBar').style.background = sc.color;
+
+    const badge = document.getElementById('resBadge');
+    if (delta > 5) {
+      badge.textContent = '↑ sube';
+      badge.className = 'summary-badge up';
+    } else if (delta < -5) {
+      badge.textContent = '↓ baja';
+      badge.className = 'summary-badge down';
+    } else {
+      badge.textContent = '≈ estable';
+      badge.className = 'summary-badge flat';
+    }
+
+    document.getElementById('dbgPbase').textContent = s.pbase;
+    document.getElementById('dbgDd').textContent = (cur.dd >= 0 ? '+' : '') + cur.dd.toFixed(1);
+    document.getElementById('dbgDfg').textContent = (cur.dfg >= 0 ? '+' : '') + cur.dfg.toFixed(1);
+    document.getElementById('dbgDg').textContent = (cur.dg >= 0 ? '+' : '') + cur.dg.toFixed(1);
+    document.getElementById('dbgRaw').textContent = cur.raw.toFixed(1);
+  }
+
+  function renderTable(results) {
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+
+    SCENARIOS.forEach((sc, i) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><span class="scenario-dot scenario-${sc.code.toLowerCase()}"></span><strong>${sc.short}</strong></td>
+        <td>${states[i].pbase}%</td>
+        <td><strong style="color:${sc.color}">${results[i].pfinal}%</strong></td>
+        <td>${sc.tactical}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    const total = results.reduce((a, b) => a + b.pfinal, 0);
+    document.getElementById('tableTotal').innerHTML = `<strong style="color:${total===100 ? '#166534' : '#991b1b'}">${total}%</strong>`;
+  }
+
+  function render() {
+    const s = states[active];
+    s.pbase = parseInt(document.getElementById('pbase').value, 10);
+    s.winf = getSelect('winf');
+    s.wcre = getSelect('wcre');
+    s.wemp = getSelect('wemp');
+    s.wfg = getSelect('wfg');
+    s.wgeo = getSelect('wgeo');
+    document.getElementById('pbaseOut').textContent = s.pbase;
+
+    buildTabs();
+    syncInputs();
+    const results = computeAll();
+    renderScenarioText(results);
+    renderSummary(results);
+    renderTable(results);
+  }
+
+  document.getElementById('pbase').addEventListener('input', render);
+  ['winf','wcre','wemp','wfg','wgeo'].forEach(id => {
+    document.getElementById(id).addEventListener('change', render);
   });
-}
 
-function buildTabs() {
-  const t = document.getElementById('scenarioTabs');
-  t.innerHTML = '';
-  SCENARIOS.forEach(s => {
-    const b = document.createElement('button');
-    b.className = 'tab' + (s.id === active ? ' active' : '');
-    b.textContent = s.name;
-    b.onclick = () => { active = s.id; render(); };
-    t.appendChild(b);
-  });
-}
-
-function getSelect(id) { return parseFloat(document.getElementById(id).value); }
-
-function calcRaw(s) {
-  const dd = s.winf*s.sinf + s.wcre*s.scre + s.wemp*s.semp;
-  const dfg = s.wfg * s.sfg;
-  const dg = s.wgeo * s.sgeo;
-  return { raw: s.pbase + dd + dfg + dg, dd, dfg, dg };
-}
-
-function round5(x) { return Math.round(x / 5) * 5; }
-
-function computeAll() {
-  const raws = states.map(s => calcRaw(s));
-  const sum = raws.reduce((a, r) => a + Math.max(0, r.raw), 0);
-  return raws.map((r) => ({
-    ...r,
-    pfinal: sum > 0 ? round5((Math.max(0, r.raw) / sum) * 100) : 0
-  }));
-}
-
-function drawDonut(results) {
-  const canvas = document.getElementById('donut');
-  const ctx = canvas.getContext('2d');
-  const cx = 80, cy = 80, r = 65, hole = 38;
-  ctx.clearRect(0, 0, 160, 160);
-  let total = results.reduce((a, b) => a + Math.max(0, b.pfinal), 0);
-  if (!total) return;
-  let angle = -Math.PI / 2;
-  results.forEach((res, i) => {
-    const sweep = (Math.max(0, res.pfinal) / total) * 2 * Math.PI;
-    if (sweep < 0.001) return;
-    ctx.beginPath();
-    ctx.moveTo(cx + hole * Math.cos(angle), cy + hole * Math.sin(angle));
-    ctx.arc(cx, cy, r, angle, angle + sweep);
-    ctx.arc(cx, cy, hole, angle + sweep, angle, true);
-    ctx.closePath();
-    ctx.fillStyle = SCENARIOS[i].color;
-    ctx.globalAlpha = i === active ? 1 : 0.45;
-    ctx.fill();
-    angle += sweep;
-  });
-  ctx.globalAlpha = 1;
-
-  const leg = document.getElementById('legend');
-  leg.innerHTML = '';
-  results.forEach((res, i) => {
-    const d = document.createElement('div');
-    d.className = 'legend-item';
-    d.innerHTML = `<span class="legend-dot" style="background:${SCENARIOS[i].color}"></span><span>${SCENARIOS[i].name}: <b>${res.pfinal}%</b></span>`;
-    leg.appendChild(d);
-  });
-}
-
-function renderAll(results) {
-  const c = document.getElementById('all-card');
-  c.innerHTML = '';
-  results.forEach((res, i) => {
-    const pct = Math.max(0, res.pfinal);
-    const d = document.createElement('div');
-    d.className = 'all-row';
-    d.innerHTML = `
-      <div class="all-row-header">
-        <span style="color:${i===active?'#111':'#888'};font-weight:${i===active?600:400}">${SCENARIOS[i].name}</span>
-        <span style="font-weight:600;color:${SCENARIOS[i].color}">${pct}%</span>
-      </div>
-      <div class="bar-wrap"><div class="bar" style="width:${pct}%;background:${SCENARIOS[i].color};opacity:${i===active?1:0.5}"></div></div>`;
-    c.appendChild(d);
-  });
-  const total = results.reduce((a, b) => a + Math.max(0, b.pfinal), 0);
-  const tr = document.createElement('div');
-  tr.className = 'total-row';
-  tr.innerHTML = `<span style="color:#999">Total normalizado</span><span style="font-weight:700;color:${total===100?'#065f46':'#991b1b'}">${total}%</span>`;
-  c.appendChild(tr);
-}
-
-function syncInputs() {
-  const s = states[active];
-  document.getElementById('pbase').value = s.pbase;
-  document.getElementById('pbase-out').textContent = s.pbase;
-  document.getElementById('winf').value = s.winf;
-  document.getElementById('wcre').value = s.wcre;
-  document.getElementById('wemp').value = s.wemp;
-  document.getElementById('wfg').value = s.wfg;
-  document.getElementById('wgeo').value = s.wgeo;
-  makeSigBtns('sinf-btns', 'sinf');
-  makeSigBtns('scre-btns', 'scre');
-  makeSigBtns('semp-btns', 'semp');
-  makeSigBtns('sfg-btns', 'sfg');
-  makeSigBtns('sgeo-btns', 'sgeo');
-}
-
-function render() {
-  const s = states[active];
-  s.pbase = parseInt(document.getElementById('pbase').value);
-  s.winf = getSelect('winf'); s.wcre = getSelect('wcre');
-  s.wemp = getSelect('wemp'); s.wfg = getSelect('wfg');
-  s.wgeo = getSelect('wgeo');
-  document.getElementById('pbase-out').textContent = s.pbase;
-
-  buildTabs();
-  syncInputs();
-
-  const results = computeAll();
-  const cur = results[active];
-
-  document.getElementById('res-name').textContent = SCENARIOS[active].name;
-  document.getElementById('res-pct').textContent = cur.pfinal + '%';
-  document.getElementById('res-pct').style.color = SCENARIOS[active].color;
-
-  const delta = cur.pfinal - s.pbase;
-  document.getElementById('res-delta').textContent = (delta >= 0 ? '+' : '') + delta.toFixed(1) + ' respecto a Pbase';
-  document.getElementById('res-delta').style.color = delta > 0 ? '#065f46' : delta < 0 ? '#991b1b' : '#999';
-
-  document.getElementById('res-bar').style.width = Math.min(cur.pfinal, 100) + '%';
-  document.getElementById('res-bar').style.background = SCENARIOS[active].color;
-
-  const badge = document.getElementById('res-badge');
-  if (delta > 5) { badge.textContent = '↑ sube'; badge.className = 'badge up'; }
-  else if (delta < -5) { badge.textContent = '↓ baja'; badge.className = 'badge down'; }
-  else { badge.textContent = '≈ estable'; badge.className = 'badge flat'; }
-
-  document.getElementById('dbg-pbase').textContent = s.pbase;
-  document.getElementById('dbg-dd').textContent = (cur.dd >= 0 ? '+' : '') + cur.dd.toFixed(1);
-  document.getElementById('dbg-dfg').textContent = (cur.dfg >= 0 ? '+' : '') + cur.dfg.toFixed(1);
-  document.getElementById('dbg-dg').textContent = (cur.dg >= 0 ? '+' : '') + cur.dg.toFixed(1);
-
-  renderAll(results);
-  drawDonut(results);
-}
-
-document.getElementById('pbase').oninput = render;
-['winf','wcre','wemp','wfg','wgeo'].forEach(id => document.getElementById(id).onchange = render);
-
-render();
+  render();
 </script>
 </body>
 </html>
